@@ -15,7 +15,7 @@ typedef struct internal_state {
 
 // Clock
 static f64 clock_frequency;
-static LARGE_INTEGER start_time;
+static large_integer start_time;
 
 LRESULT CALLBACK win32_process_message(HWND hwnd, u32 message, WPARAM w_param, LPARAM l_param);
 
@@ -161,9 +161,9 @@ void platform_console_write_error(const char* message, u8 color) {
 }
 
 f64 platform_get_absolute_time() {
-     LARGE_INTEGER now;
-     QueryPerformanceCounter(&now);
-     return (f64)now.QuadPart * clock_frequency;
+     large_integer now;
+     queryperformancecounter(&now);
+     return (f64)now.quadpart * clock_frequency;
 }
 
 void platform_sleep(u64 ms) {
@@ -215,7 +215,7 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, u32 message, WPARAM w_param, L
             // TODO: Mouse Wheel Input processing
         }break;
 
-         case WM_LBUTTONDOWN:
+        case WM_LBUTTONDOWN:
         case WM_MBUTTONDOWN:
         case WM_RBUTTONDOWN:
         case WM_LBUTTONUP:

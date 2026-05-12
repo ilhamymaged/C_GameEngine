@@ -3,7 +3,7 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/engine/src/**",
+                "${workspaceFolder}/engine/src/**"
             ],
             "defines": [
                 "_DEBUG",
@@ -19,7 +19,7 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/engine/src/**",
+                "${workspaceFolder}/engine/src/**"
             ],
             "defines": [
                 "_DEBUG",
