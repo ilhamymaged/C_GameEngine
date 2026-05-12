@@ -1,8 +1,7 @@
 #include <entry.h>
 #include "game.h"
 
-// TODO: Remove This
-#include <platform/platform.h>
+#include <core/AGmemory.h>
 
 b8 create_game(game* out_game) {
     out_game->app_config.name = "SkyBoxGame";
@@ -15,7 +14,7 @@ b8 create_game(game* out_game) {
     out_game->render = game_render;
     out_game->update = game_update;
     out_game->on_resize = game_on_resize;
-    out_game->state = platform_allocate(sizeof(game_state), FALSE);
+    out_game->state = AGallocate(sizeof(game_state), FALSE);
 
     return TRUE;
 }

@@ -3,6 +3,7 @@
 #include "logger.h"
 
 #include "platform/platform.h"
+#include "core/AGmemory.h"
 
 #include <game_types.h>
 
@@ -61,6 +62,8 @@ b8 application_create(game* game_instance) {
 }
 
 b8 application_run() {
+    AG_INFO(get_memory_usage_str());
+
     while(app_state.is_running) {
         if(!platform_pump_messages(&app_state.plat_state)) {
             app_state.is_running = FALSE;
