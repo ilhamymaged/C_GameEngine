@@ -1,4 +1,5 @@
 #include "game.h"
+#include <core/input.h>
 
 #include <core/logger.h>
 

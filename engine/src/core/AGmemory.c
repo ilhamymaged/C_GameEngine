@@ -3,7 +3,7 @@
 #include <platform/platform.h>
 #include <core/logger.h>
 
-#include <string.h>
+#include "AGstring.h"
 #include <stdio.h>
 
 typedef struct memory_state {
@@ -76,13 +76,13 @@ void* AGset_memory(void* dest, i32 value, u64 size) {
     return platform_set_memory(dest, value, size);
 }
 
-char* get_memory_usage() {
+char* get_memory_usage_str() {
     const u64 gib = 1024 * 1024 * 1024;
     const u64 mib = 1024 * 1024;
     const u64 kib = 1024;
 
     char buffer[8000] = "System memory usege (tagged):\n";
-    u64 offset = strlen(buffer);
+    u64 offset = string_length(buffer);
     for (u32 i = 0; i < MEMORY_TAG_MAX_TAGS; ++i) {
         char unit[4] = "XiB";
         float amount = 1.0f;
@@ -104,7 +104,7 @@ char* get_memory_usage() {
         i32 length = snprintf(buffer + offset, 8000, "  %s: %.2f%s\n", memory_tag_strings[i], amount, unit);
         offset += length;
     }
-    char* out_string = strdup(buffer);
+    char* out_string = string_duplicate(buffer);
     return out_string;
 }
 
