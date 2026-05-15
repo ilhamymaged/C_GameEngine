@@ -1,0 +1,18 @@
+#pragma once
+
+#include "defines.h"
+
+#include "platform/platform.h"
+
+#include "core/event.h"
+
+#include "camera.h"
+
+void renderer_init(platform_state* plat_state, u32 width, u32 height);
+void renderer_shutdown();
+
+void renderer_clear_screen(float r, float g, float b, float a);
+b8 renderer_on_resize(u16 code, void* sender, void* listener_inst, event_context data);
+
+void renderer_begin_frame();
+void renderer_end_frame();

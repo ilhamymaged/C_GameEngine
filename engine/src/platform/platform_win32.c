@@ -12,6 +12,8 @@
 typedef struct internal_state {
     HINSTANCE  h_instance;
     HWND hwnd;
+    HDC hdc;
+    HGLRC gl_context;
 } internal_state;
 
 // Clock
@@ -19,6 +21,49 @@ static f64 clock_frequency;
 static LARGE_INTEGER start_time;
 
 LRESULT CALLBACK win32_process_message(HWND hwnd, u32 message, WPARAM w_param, LPARAM l_param);
+
+// WGL EXTENSIONS
+typedef HGLRC(WINAPI* wgl_create_context_attribs_arb)(HDC, HGLRC, const int*);
+static wgl_create_context_attribs_arb wglCreateContextAttribsARB = NULL;
+
+typedef const char* (WINAPI* wgl_get_extensions_string_ext)();
+static wgl_get_extensions_string_ext wglGetExtensionsStringEXT = NULL;
+
+static b8 load_wgl_extensions(HDC hdc) {
+    // Create a temporary context to load WGL extension functions
+    PIXELFORMATDESCRIPTOR pfd = { 0 };
+    pfd.nSize = sizeof(pfd);
+    pfd.nVersion = 1;
+    pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+    pfd.iPixelType = PFD_TYPE_RGBA;
+    pfd.cColorBits = 32;
+    pfd.cDepthBits = 24;
+
+    int pf = ChoosePixelFormat(hdc, &pfd);
+    SetPixelFormat(hdc, pf, &pfd);
+
+    HGLRC temp_ctx = wglCreateContext(hdc);
+    if (!temp_ctx) {
+        AG_FATAL("Failed to create temporary OpenGL context for WGL extension loading");
+        return FALSE;
+    }
+
+    wglMakeCurrent(hdc, temp_ctx);
+
+    wglCreateContextAttribsARB = (wgl_create_context_attribs_arb)wglGetProcAddress("wglCreateContextAttribsARB");
+    wglGetExtensionsStringEXT = (wgl_get_extensions_string_ext)wglGetProcAddress("wglGetExtensionsStringEXT");
+
+    if (!wglCreateContextAttribsARB) {
+        AG_FATAL("Failed to load wglCreateContextAttribsARB");
+        wglMakeCurrent(NULL, NULL);
+        wglDeleteContext(temp_ctx);
+        return FALSE;
+    }
+
+    wglMakeCurrent(NULL, NULL);
+    wglDeleteContext(temp_ctx);
+    return TRUE;
+}
 
 b8 platform_startup(platform_state* plat_state, const char* application_name, i32 x, i32 y, i32 width, i32 height) {
     
@@ -86,6 +131,32 @@ b8 platform_startup(platform_state* plat_state, const char* application_name, i3
         state->hwnd = handle;
     }
 
+    state->hdc = GetDC(state->hwnd);
+    if (!load_wgl_extensions(state->hdc)) {
+        AG_FATAL("Failed to load WGL extensions");
+        return FALSE;
+    }
+
+    #define WGL_CONTEXT_MAJOR_VERSION_ARB 0x2091
+    #define WGL_CONTEXT_MINOR_VERSION_ARB 0x2092
+    #define WGL_CONTEXT_PROFILE_MASK_ARB  0x9126
+    #define WGL_CONTEXT_CORE_PROFILE_BIT_ARB 0x00000001
+
+    int attribs[] = {
+        WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+        WGL_CONTEXT_MINOR_VERSION_ARB, 6,
+        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+        0
+    };
+
+    state->gl_context = wglCreateContextAttribsARB(state->hdc, 0, attribs);
+    if (!state->gl_context) {
+        AG_FATAL("Failed to create modern OpenGL context");
+        return FALSE;
+    }
+
+    wglMakeCurrent(state->hdc, state->gl_context);
+
     b32 should_activate = 1; //TODO: if the window should't accept input, this should be false.
     i32 show_window_command_flags = should_activate ? SW_SHOW : SW_SHOWNOACTIVATE;
     ShowWindow(state->hwnd, show_window_command_flags);
@@ -107,9 +178,17 @@ void platform_shutdown(platform_state* plat_state) {
     }
 }
 
+void platform_swap_buffers(platform_state* plat_state) {
+    internal_state* state = (internal_state*)plat_state->internal_state;
+    SwapBuffers(state->hdc);
+}
+
 b8 platform_pump_messages(platform_state* plat_state) {
     MSG message;
     while (PeekMessageA(&message, NULL, 0, 0, PM_REMOVE)) {
+        if (message.message == WM_QUIT) {
+            return FALSE;
+        }
         TranslateMessage(&message);
         DispatchMessageA(&message);
     }
@@ -177,20 +256,20 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, u32 message, WPARAM w_param, L
         case WM_ERASEBKGND: 
             return 1; // Don't Worry About Drawing To thte screen
         
-        case WM_CLOSE: // TODO: fire an Event To The Application To Quit 
-            return 0;
+        case WM_CLOSE: // TODO: fire an Event To The Application To Quit
+            PostQuitMessage(0); 
 
         case WM_DESTROY:
             PostQuitMessage(0);
             return 0;
 
         case WM_SIZE: {
-            // RECT r;
-            // GetClientRect(hwnd, &r);
-            // u32 width = r.right - r.left;
-            // u32 height = r.bottom - r.top;
-            // TODO: Input processing
+            RECT r;
+            GetClientRect(hwnd, &r);
+            u32 width = r.right - r.left;
+            u32 height = r.bottom - r.top;
 
+            input_process_resize(width, height);
         } break;
 
         case WM_KEYDOWN:

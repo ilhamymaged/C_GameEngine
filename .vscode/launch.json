@@ -19,7 +19,7 @@
             "program": "${workspaceFolder}/bin/skyBoxGame",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/bin/",
+            "cwd": "${workspaceFolder}",
             "environment": [],
         }
     ]

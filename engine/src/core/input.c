@@ -74,7 +74,7 @@ void input_process_mouse_move(i16 x, i16 y) {
     // Only process if actually different
     if (state.mouse_current.x != x || state.mouse_current.y != y) {
         // NOTE: Enable this if debugging.
-        AG_DEBUG("Mouse pos: %i, %i!", x, y);
+        // AG_DEBUG("Mouse pos: %i, %i!", x, y);
 
         // Update internal state.
         state.mouse_current.x = x;
@@ -95,6 +95,18 @@ void input_process_mouse_wheel(i8 z_delta) {
     event_context context;
     context.data.u8[0] = z_delta;
     event_fire(EVENT_CODE_MOUSE_WHEEL, 0, context);
+}
+
+void input_process_resize(u32 width, u32 height) {
+
+    if (width == 0 || height == 0) {
+        return;
+    }
+
+    event_context context;
+    context.data.u32[0] = width;
+    context.data.u32[1] = height;
+    event_fire(EVENT_CODE_RESIZED, 0, context);
 }
 
 b8 input_is_key_down(keys key) {

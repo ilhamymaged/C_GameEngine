@@ -13,8 +13,14 @@ assembly="engine"
 compilerFlags="-g -shared -fdeclspec -fPIC"
 # -fms-extensions 
 # -Wall -Werror
-includeFlags="-Isrc"
-linkerFlags="-lxcb -lX11 -lX11-xcb -lxkbcommon -lxkbcommon-x11"
+if [ -z "$ASSIMP_INCLUDE" ]; then
+    ASSIMP_INCLUDE="-Ivendor/assimp/include"
+fi
+if [ -z "$ASSIMP_LIB" ]; then
+    ASSIMP_LIB="-Lvendor/assimp/lib -lassimp"
+fi
+includeFlags="-Isrc -Ivendor/glad/include $ASSIMP_INCLUDE"
+linkerFlags="-lxcb -lX11 -lX11-xcb -lxkbcommon -lxkbcommon-x11 $ASSIMP_LIB"
 defines="-D_DEBUG -DAGINA_EXPORT"
 
 echo "Building $assembly..."

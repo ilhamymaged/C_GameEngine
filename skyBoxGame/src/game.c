@@ -2,6 +2,7 @@
 #include <core/input.h>
 
 #include <core/logger.h>
+#include <renderer/opengl_renderer_front_end.h>
 
 b8 game_init(game* game_inst) {
     AG_DEBUG("game_init() called");

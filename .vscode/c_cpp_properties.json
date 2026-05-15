@@ -3,7 +3,9 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/engine/src/**"
+                "${workspaceFolder}/engine/src/**",
+                "${workspaceFolder}/engine/vendor/glad/include/**",
+                "${workspaceFolder}/engine/vendor/assimp/include/**"
             ],
             "defines": [
                 "_DEBUG",
@@ -19,7 +21,9 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/engine/src/**"
+                "${workspaceFolder}/engine/src/**",
+                "${workspaceFolder}/engine/vendor/glad/include/**",
+                "${workspaceFolder}/engine/vendor/assimp/include/**"
             ],
             "defines": [
                 "_DEBUG",

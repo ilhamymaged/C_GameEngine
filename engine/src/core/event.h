@@ -103,8 +103,8 @@ typedef enum system_event_code {
 
     // Resized/resolution changed from the OS.
     /* Context usage:
-     * u16 width = data.data.u16[0];
-     * u16 height = data.data.u16[1];
+     * u32 width = data.data.u32[0];
+     * u32 height = data.data.u32[1];
      */
     EVENT_CODE_RESIZED = 0x08,
 

@@ -16,7 +16,9 @@ b8 platform_startup(
 
 void platform_shutdown(platform_state* plat_state);
 
-b8 platform_pump_messages(platform_state* plat_state);    
+b8 platform_pump_messages(platform_state* plat_state);
+
+void platform_swap_buffers(platform_state* plat_state);
 
 void* platform_allocate(u64 size, b8 aligned);
 void  platform_free(void* block, b8 aligned); 

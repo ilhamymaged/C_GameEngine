@@ -7,6 +7,7 @@
 #include "core/event.h"
 #include "core/input.h"
 #include "core/clock.h"
+#include "renderer/opengl_renderer_front_end.h"
 
 #include <game_types.h>
 
@@ -21,8 +22,9 @@ typedef struct application_state {
     f64 last_time;
 }application_state;
 
-static b8 initialized = FALSE;
 static application_state app_state;
+static b8 application_on_key_pressed(u16 code, void* sender, void* listener_inst, event_context data);
+static b8 initialized = FALSE;
 
 b8 application_create(game* game_instance) {
     if (initialized) {
@@ -35,7 +37,6 @@ b8 application_create(game* game_instance) {
     // Initialize subSystems
     initialize_logging();
     input_initialize();
-
     // TODO: Remove This
     AG_INFO("Hello! From Agina");
 
@@ -57,18 +58,35 @@ b8 application_create(game* game_instance) {
             return FALSE;
     }
 
+    event_register(EVENT_CODE_KEY_PRESSED, &app_state, application_on_key_pressed);
+   
+
+    renderer_init(&app_state.plat_state, game_instance->app_config.start_width, game_instance->app_config.start_height);
+
     //Init The Game
     if (!app_state.game_instance->init(app_state.game_instance)) {
         AG_FATAL("Game Failed to initialize");
         return FALSE;
     }
 
-    // TODO: Event System
     app_state.game_instance->on_resize(app_state.game_instance, app_state.width, app_state.height);
 
     initialized = TRUE;
     
     return TRUE;
+}
+
+static b8 application_on_key_pressed(u16 code, void* sender, void* listener_inst, event_context data) {
+    (void)code;
+    (void)sender;
+    (void)listener_inst;
+
+    if (data.data.u16[0] == KEY_ESCAPE) {
+        app_state.is_running = FALSE;
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 b8 application_run() {
@@ -98,12 +116,15 @@ b8 application_run() {
                 break;
             }
 
+            renderer_clear_screen(.1f, 0.1f, 0.1f, 1.0f);
+            renderer_begin_frame();
             // Call the game's render routine.
             if (!app_state.game_instance->render(app_state.game_instance, (f32)delta)) {
                 AG_FATAL("Game render failed, shutting down.");
                 app_state.is_running = FALSE;
                 break;
             }
+            renderer_end_frame();
 
             // Figure out how long the frame took and, if below
             f64 frame_end_time = platform_get_absolute_time();
@@ -136,6 +157,7 @@ b8 application_run() {
 b8 application_shutDown() {
     event_shutdown();
     input_shutdown();
+    renderer_shutdown();
     platform_shutdown(&app_state.plat_state);
     
     return TRUE; 
