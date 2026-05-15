@@ -22,7 +22,7 @@ typedef struct renderer_state {
 
 struct renderer_state r_state;
 
-void renderer_init(platform_state* plat_state, u32 width, u32 height) {
+void opengl_renderer_init(platform_state* plat_state, u32 width, u32 height) {
     renderer_back_end_init();
     state = plat_state;
     r_state.width = width;
@@ -34,20 +34,22 @@ void renderer_init(platform_state* plat_state, u32 width, u32 height) {
     renderer_back_end_create_shader(&r_state.test_shader, "../engine/shaders/basic.vs", "../engine/shaders/basic.frag");
     renderer_back_end_init_model(&r_state.backpack_model, "../engine/assets/models/backpack/backpack.obj");
 
-    event_register(EVENT_CODE_RESIZED, state, renderer_on_resize);
+    event_register(EVENT_CODE_RESIZED, state, opengl_renderer_on_resize); 
 }
 
-void renderer_shutdown() {
+void opengl_renderer_shutdown() {
     renderer_back_end_destroy_shader(&r_state.test_shader);
     renderer_back_end_destroy_model(&r_state.backpack_model);
     renderer_back_end_shutdown();
+
+    event_unregister(EVENT_CODE_RESIZED, state, opengl_renderer_on_resize);
 }
 
-void renderer_clear_screen(float r, float g, float b, float a) {
+void opengl_renderer_clear_screen(float r, float g, float b, float a) {
     renderer_back_end_clear_screen(r, g, b, a);
 }
 
-void renderer_begin_frame() {
+void opengl_renderer_begin_frame() {
     renderer_back_end_use_shader(&r_state.test_shader);
 
     mat4 model_matrix = mat4_identity();
@@ -58,7 +60,7 @@ void renderer_begin_frame() {
     renderer_back_end_draw_model(&r_state.backpack_model);
 }
 
-b8 renderer_on_resize(u16 code, void* sender, void* listener_inst, event_context data) {
+b8 opengl_renderer_on_resize(u16 code, void* sender, void* listener_inst, event_context data) {
     (void)listener_inst;
     u32 width = data.data.u32[0];
     u32 height = data.data.u32[1];
@@ -73,6 +75,6 @@ b8 renderer_on_resize(u16 code, void* sender, void* listener_inst, event_context
     return TRUE;
 }
 
-void renderer_end_frame() {
+void opengl_renderer_end_frame() {
     platform_swap_buffers(state);
 }

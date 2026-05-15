@@ -9,8 +9,8 @@
 #define SHADER_CLEANUP() \
     glDeleteShader(vertex_shader); \
     glDeleteShader(fragment_shader); \
-    AGfree(vertex_code, vertex_length, MEMORY_TAG_SHADER); \
-    AGfree(fragment_code, fragment_length, MEMORY_TAG_SHADER);
+    AGfree(vertex_code, vertex_length, MEMORY_TAG_STRING); \
+    AGfree(fragment_code, fragment_length, MEMORY_TAG_STRING);
 
 b8 create_shader(shader* shader, const char* vertex_source, const char* fragment_source) {
     u64 vertex_length, fragment_length;
@@ -36,8 +36,8 @@ b8 create_shader(shader* shader, const char* vertex_source, const char* fragment
 
         glDeleteShader(vertex_shader);
 
-        AGfree(vertex_code, vertex_length, MEMORY_TAG_SHADER);
-        AGfree(fragment_code, fragment_length, MEMORY_TAG_SHADER);
+        AGfree(vertex_code, vertex_length, MEMORY_TAG_STRING);
+        AGfree(fragment_code, fragment_length, MEMORY_TAG_STRING);
         return FALSE;
     }
 
@@ -81,8 +81,8 @@ b8 create_shader(shader* shader, const char* vertex_source, const char* fragment
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
 
-    AGfree(vertex_code, vertex_length, MEMORY_TAG_SHADER);
-    AGfree(fragment_code, fragment_length, MEMORY_TAG_SHADER);  
+    AGfree(vertex_code, vertex_length, MEMORY_TAG_STRING);
+    AGfree(fragment_code, fragment_length, MEMORY_TAG_STRING);  
 
     AG_INFO("Shader program created successfully with ID: %u", shader->id);
 

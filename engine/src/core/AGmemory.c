@@ -31,7 +31,6 @@ static const char* memory_tag_strings[MEMORY_TAG_MAX_TAGS] = {
     "SCENE      ", 
     "MESH        ",
     "MODEL       ", 
-    "SHADER      ",
     "SHADER_UNIFORM" };
 
 static memory_state state;

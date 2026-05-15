@@ -8,11 +8,11 @@
 
 #include "camera.h"
 
-void renderer_init(platform_state* plat_state, u32 width, u32 height);
-void renderer_shutdown();
+void opengl_renderer_init(platform_state* plat_state, u32 width, u32 height);
+void opengl_renderer_shutdown();
 
-void renderer_clear_screen(float r, float g, float b, float a);
-b8 renderer_on_resize(u16 code, void* sender, void* listener_inst, event_context data);
+void opengl_renderer_clear_screen(float r, float g, float b, float a);
+b8 opengl_renderer_on_resize(u16 code, void* sender, void* listener_inst, event_context data);
 
-void renderer_begin_frame();
-void renderer_end_frame();
+void opengl_renderer_begin_frame();
+void opengl_renderer_end_frame();
