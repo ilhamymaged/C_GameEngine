@@ -15,7 +15,7 @@ char* read_file(const char* file_path, u64* out_length) {
     fseek(file, 0, SEEK_SET);
 
     if (out_length) {
-        *out_length = (u64)length;
+        *out_length = (u64)length + 1;
     }
 
     char* buffer = (char*)AGallocate(length + 1, MEMORY_TAG_STRING);

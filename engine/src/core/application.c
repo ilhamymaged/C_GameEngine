@@ -114,7 +114,9 @@ b8 application_run() {
     u8 frame_count = 0;
     f64 target_frame_seconds = 1.0f / 60;
 
-    AG_INFO(get_memory_usage_str());
+    char buffer[8000];
+    get_memory_usage_buffer(buffer, sizeof(buffer));
+    AG_INFO(buffer);
 
     while(app_state.is_running) {
         if(!platform_pump_messages(&app_state.plat_state)) {
@@ -133,14 +135,21 @@ b8 application_run() {
                 break;
             }
 
-            renderer_clear_screen(0.1f, 0.1f, 0.1f, 1.0f);
-            renderer_begin_frame();
+            renderer_begin_frame(0.1f, 0.1f, 0.1f, 1.0f);
             // Call the game's render routine.
             if (!app_state.game_instance->render(app_state.game_instance, (f32)delta)) {
                 AG_FATAL("Game render failed, shutting down.");
                 app_state.is_running = FALSE;
                 break;
             }
+
+            renderer_begin_ui_frame();
+            if (!app_state.game_instance->ui_render(app_state.game_instance, (f32)delta)) {
+                AG_FATAL("Game UI render failed, shutting down.");
+                app_state.is_running = FALSE;
+                break;
+            }
+            renderer_end_ui_frame();
             renderer_end_frame();
 
             // Figure out how long the frame took and, if below
@@ -172,13 +181,20 @@ b8 application_run() {
 }
 
 b8 application_shutDown() {
-    event_shutdown();
-    input_shutdown();
-    renderer_shutdown();
+
     event_unregister(EVENT_CODE_KEY_PRESSED, &app_state, application_on_key_pressed);
     event_unregister(EVENT_CODE_RESIZED, &app_state, application_on_resize);
-    platform_shutdown(&app_state.plat_state);
+    
     app_state.game_instance->shutdown(app_state.game_instance);
+
+    renderer_shutdown();
+
+    event_shutdown();
+    input_shutdown();
+
+    platform_shutdown(&app_state.plat_state);
+
     get_remaining_memory_str();
+
     return TRUE; 
 }

@@ -38,6 +38,6 @@ AGINA_API void* AGzero_memory(void* block, u64 size);
 AGINA_API void* AGcopy_memory(void* dest, const void* source, u64 size);
 AGINA_API void* AGset_memory(void* dest, i32 value, u64 size);
 
-char* get_memory_usage_str();
+void get_memory_usage_buffer(char* buffer, u64 size);
 u64 get_memory_usage(memory_tag type);
 void get_remaining_memory_str();

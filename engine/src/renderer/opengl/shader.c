@@ -84,9 +84,31 @@ b8 create_shader(shader* shader, const char* vertex_source, const char* fragment
     AGfree(vertex_code, vertex_length, MEMORY_TAG_STRING);
     AGfree(fragment_code, fragment_length, MEMORY_TAG_STRING);  
 
-    AG_INFO("Shader program created successfully with ID: %u", shader->id);
-    AG_DEBUG("Vertex Shader: %s", vertex_source);
-    AG_DEBUG("Fragment Shader: %s", fragment_source);
+    const char* filename = strrchr(vertex_source, '/');
+
+    #ifdef _WIN32
+    // Support Windows paths too
+    const char* backslash = strrchr(vertex_source, '\\');
+    if (!filename || (backslash && backslash > filename)) {
+        filename = backslash;
+    }
+    #endif
+
+    filename = filename ? filename + 1 : vertex_source;
+
+    // Copy filename without extension
+    const char* dot = strrchr(filename, '.');
+
+    size_t length = dot ? (size_t)(dot - filename) : strlen(filename);
+
+    if (length >= sizeof(shader->name)) {
+        length = sizeof(shader->name) - 1;
+    }
+
+    AGcopy_memory(shader->name, filename, length);
+    shader->name[length] = '\0';
+
+    AG_INFO("Shader program created successfully with ID: %u, with NAME: %s", shader->id, shader->name);
 
     // Initialize uniform cache for this shader
     shader->uniform_cache = (uniform_cache_entry*)AGallocate(
@@ -136,6 +158,11 @@ GLint shader_get_uniform_location(shader* shader, const char* name) {
 
     // Not in cache, look it up
     GLint location = glGetUniformLocation(shader->id, name);
+    if (location == -1) {
+        AG_WARN("Uniform '%s' not found in shader %s", name, shader->name);
+    } else {
+        AG_DEBUG("Uniform '%s' found at location %d in shader %s", name, location, shader->name);
+    }
 
     // Cache it if there's space and it was found
     if (location >= 0 && shader->uniform_cache_count < MAX_SHADER_UNIFORMS) {

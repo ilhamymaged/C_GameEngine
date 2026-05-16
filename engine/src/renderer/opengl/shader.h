@@ -15,6 +15,7 @@ typedef struct shader {
     u32 id;
     uniform_cache_entry* uniform_cache;
     u32 uniform_cache_count;
+    char name[64];
 } shader;
 
 AGINA_API b8 create_shader(shader* shader, const char* vertex_source, const char* fragment_source);

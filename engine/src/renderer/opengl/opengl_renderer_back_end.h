@@ -12,3 +12,6 @@ void renderer_back_end_on_resize(u32 width, u32 height);
 
 void debug_check(const char* msg);
 
+void opengl_renderer_back_end_begin_ui_frame();
+void opengl_renderer_back_end_end_ui_frame();
+

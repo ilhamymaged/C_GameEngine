@@ -8,6 +8,241 @@
 #include <string.h>
 #include <core/logger.h>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846f
+#endif
+
+void init_quad(model* m) {
+
+    quad_desc* desc = (quad_desc*)m->add_data;
+    float vertices[] = {
+        // pos               // color        // uv
+        -1.0f, -1.0f, 0.0f,   desc->color.x, desc->color.y, desc->color.z,        0.0f, 0.0f,
+         1.0f, -1.0f, 0.0f,   desc->color.x, desc->color.y, desc->color.z,        1.0f, 0.0f,
+         1.0f,  1.0f, 0.0f,   desc->color.x, desc->color.y, desc->color.z,        1.0f, 1.0f,
+        -1.0f,  1.0f, 0.0f,   desc->color.x, desc->color.y, desc->color.z,        0.0f, 1.0f
+    };
+
+    u32 indices[] = {
+        0, 1, 2,
+        2, 3, 0
+    };
+
+    m->mesh_count = 1;
+    m->meshes = (mesh*)AGallocate(sizeof(mesh), MEMORY_TAG_MODEL);
+
+    init_mesh(&m->meshes[0],
+              vertices,
+              4,
+              indices,
+              6);
+}
+
+void init_sphere(model* m) {
+    sphere_desc* desc = (sphere_desc*)m->add_data;
+
+    // Default fallbacks if no descriptor is provided
+    float radius =  desc->radius == 0 ?  0.5f : desc->radius;
+    int sectors =  desc->sectors == 0 ?  36 : desc->sectors; 
+    int stacks =    desc->stacks == 0 ?  36 : desc->stacks;
+
+    // Calculate total counts
+    u64 vertex_count = (stacks + 1) * (sectors + 1);
+    u64 index_count = stacks * sectors * 6;
+
+    // Your engine utilizes 8 floats per vertex (3 pos, 3 norm, 2 uv)
+    float* vertices = (float*)AGallocate(vertex_count * 8 * sizeof(float), MEMORY_TAG_MODEL);
+    u32* indices = (u32*)AGallocate(index_count * sizeof(u32), MEMORY_TAG_MODEL);
+
+    int v = 0;
+    float x, y, z, xy;                              // vertex position
+    float lengthInv = 1.0f / radius;                // Inverse radius for quick normalization
+    float s, t;                                     // vertex texCoords
+
+    float sectorStep = 2 * M_PI / sectors;
+    float stackStep = M_PI / stacks;
+    float sectorAngle, stackAngle;
+
+    // 1. Generate vertices, normals, and UVs
+    for (int i = 0; i <= stacks; ++i) {
+        stackAngle = M_PI / 2 - i * stackStep;        // starting from pi/2 to -pi/2
+        xy = radius * cosf(stackAngle);             // r * cos(u)
+        z = radius * sinf(stackAngle);              // r * sin(u)
+
+        for (int j = 0; j <= sectors; ++j) {
+            sectorAngle = j * sectorStep;           // starting from 0 to 2pi
+
+            // Position
+            x = xy * cosf(sectorAngle);             // r * cos(u) * cos(v)
+            y = xy * sinf(sectorAngle);             // r * cos(u) * sin(v)
+            
+            // In OpenGL, usually Y is up, so we swap coordinates to make it stand upright
+            vertices[v++] = x;
+            vertices[v++] = z; // Y position
+            vertices[v++] = y; // Z position
+
+            // Normalized Normals
+            vertices[v++] = x * lengthInv;
+            vertices[v++] = z * lengthInv;
+            vertices[v++] = y * lengthInv;
+
+            // Vertex TexCoords (UVs)
+            s = (float)j / sectors;
+            t = (float)i / stacks;
+            vertices[v++] = s;
+            vertices[v++] = t;
+        }
+    }
+
+    // 2. Generate indices (stitching the stacks and sectors into triangles)
+    int k1, k2;
+    int idx = 0;
+    for (int i = 0; i < stacks; ++i) {
+        k1 = i * (sectors + 1);     // beginning of current stack
+        k2 = k1 + sectors + 1;      // beginning of next stack
+
+        for (int j = 0; j < sectors; ++j, ++k1, ++k2) {
+            // 2 triangles per sector grid quad
+            // k1---k1+1
+            // |  /  |
+            // k2---k2+1
+            
+            // Triangle 1: k1 -> k2 -> k1+1
+            indices[idx++] = k1;
+            indices[idx++] = k2;
+            indices[idx++] = k1 + 1;
+
+            // Triangle 2: k1+1 -> k2 -> k2+1
+            indices[idx++] = k1 + 1;
+            indices[idx++] = k2;
+            indices[idx++] = k2 + 1;
+        }
+    }
+
+    m->mesh_count = 1;
+    m->meshes = (mesh*)AGallocate(sizeof(mesh), MEMORY_TAG_MODEL);
+
+    mesh* sphere_mesh = &m->meshes[0];
+    init_mesh(sphere_mesh, vertices, vertex_count, indices, index_count);
+
+    AGfree(vertices, vertex_count * 8 * sizeof(float), MEMORY_TAG_MODEL);
+    AGfree(indices, index_count * sizeof(u32), MEMORY_TAG_MODEL);
+}
+
+#define DEFAULT_GRID_SIZE 100
+#define DEFAULT_GRID_DIVISIONS 100
+
+void init_grid(model* m) {
+    grid_desc* desc = (grid_desc*)m->add_data;
+
+    int size = desc->size == 0 ? DEFAULT_GRID_SIZE : desc->size;
+    int divisions = desc->divisions == 0 ? DEFAULT_GRID_DIVISIONS : desc->divisions;
+
+    int line_count = divisions + 1;
+    float step = (float)size / divisions;
+    float half = (float)size * 0.5f;
+
+    int total_lines = line_count * 2;
+
+    // 2 vertices per line
+    int vertex_count = total_lines * 2;
+
+    // each line = 2 indices
+    int index_count = total_lines * 2;
+
+    float* vertices = (float*)AGallocate(vertex_count * 8 * sizeof(float), MEMORY_TAG_MODEL);
+    u32* indices = (u32*)AGallocate(index_count * sizeof(u32), MEMORY_TAG_MODEL);
+
+    int v = 0;
+    int i = 0;
+    u32 base_vertex = 0;
+
+    for (int j = 0; j < line_count; j++) {
+        float offset = -half + j * step;
+
+        // ---- X axis line ----
+        vertices[v++] = -half; vertices[v++] = 0; vertices[v++] = offset;
+        vertices[v++] = 0;     vertices[v++] = 1; vertices[v++] = 0;
+        vertices[v++] = 0;     vertices[v++] = 0;
+
+        vertices[v++] = half;  vertices[v++] = 0; vertices[v++] = offset;
+        vertices[v++] = 0;     vertices[v++] = 1; vertices[v++] = 0;
+        vertices[v++] = 0;     vertices[v++] = 0;
+
+        indices[i++] = base_vertex + 0;
+        indices[i++] = base_vertex + 1;
+        base_vertex += 2;
+
+        // ---- Z axis line ----
+        vertices[v++] = offset; vertices[v++] = 0; vertices[v++] = -half;
+        vertices[v++] = 0;      vertices[v++] = 1; vertices[v++] = 0;
+        vertices[v++] = 0;      vertices[v++] = 0;
+
+        vertices[v++] = offset; vertices[v++] = 0; vertices[v++] = half;
+        vertices[v++] = 0;      vertices[v++] = 1; vertices[v++] = 0;
+        vertices[v++] = 0;      vertices[v++] = 0;
+
+        indices[i++] = base_vertex + 0;
+        indices[i++] = base_vertex + 1;
+        base_vertex += 2;
+    }
+
+    m->mesh_count = 1;
+    m->meshes = (mesh*)AGallocate(sizeof(mesh), MEMORY_TAG_MODEL);
+
+    mesh* g = &m->meshes[0];
+    init_mesh(g, vertices, vertex_count, indices, index_count);
+
+    AGfree(vertices, vertex_count * 8 * sizeof(float), MEMORY_TAG_MODEL);
+    AGfree(indices, index_count * sizeof(u32), MEMORY_TAG_MODEL);
+}
+
+void init_cube(model* c) {
+    float vertices[] = {
+    // positions          // normals        // uv
+    -0.5f, -0.5f, -0.5f,   0, 0, -1,       0, 0, // 0 back bottom left
+     0.5f, -0.5f, -0.5f,   0, 0, -1,       1, 0, // 1 back bottom right
+     0.5f,  0.5f, -0.5f,   0, 0, -1,       1, 1, // 2 back top right
+    -0.5f,  0.5f, -0.5f,   0, 0, -1,       0, 1, // 3 back top left
+
+    -0.5f, -0.5f,  0.5f,   0, 0,  1,       0, 0, // 4 front bottom left
+     0.5f, -0.5f,  0.5f,   0, 0,  1,       1, 0, // 5 front bottom right
+     0.5f,  0.5f,  0.5f,   0, 0,  1,       1, 1, // 6 front top right
+    -0.5f,  0.5f,  0.5f,   0, 0,  1,       0, 1  // 7 front top left
+    };
+
+    u32 indices[] = {
+        // back face
+        0, 1, 2,
+        2, 3, 0,
+
+        // front face
+        4, 5, 6,
+        6, 7, 4,
+
+        // left face
+        4, 0, 3,
+        3, 7, 4,
+
+        // right face
+        1, 5, 6,
+        6, 2, 1,
+
+        // bottom face
+        4, 5, 1,
+        1, 0, 4,
+
+        // top face
+        3, 2, 6,
+        6, 7, 3
+    };
+
+    u64 vertex_count = 8; // 8 total vertices
+    u64 index_count = sizeof(indices) / sizeof(u32); // 36
+
+    init_mesh(&c->meshes[0], vertices, vertex_count, indices, index_count);
+}
+
 void destroy_mesh(mesh* m) {
     if (m->vao != 0) {
         glDeleteVertexArrays(1, &m->vao);
@@ -56,7 +291,50 @@ void draw_mesh(mesh* m) {
     glBindVertexArray(0);
 }
 
-void init_model(model* m, const char* file_path) {
+void draw_mesh_lines(mesh* m) {
+    glBindVertexArray(m->vao);
+    glDrawElements(GL_LINES, (GLsizei)m->index_count, GL_UNSIGNED_INT, (void*)0);
+    glBindVertexArray(0);
+}
+
+void init_model(model* m, const char* file_path, model_type type, void* add_data) {
+
+    m->type = type;
+    m->add_data = add_data;
+    if (type == CUBE && file_path == NULL) {
+        m->mesh_count = 1;
+        m->meshes = (mesh*)AGallocate(sizeof(mesh), MEMORY_TAG_MODEL);
+        if (m->meshes == NULL) {
+            AG_ERROR("Failed to allocate memory for cube model");
+            return;
+        }
+        init_cube(m);
+        return;
+    }
+
+    else if (type == QUAD && file_path == NULL) {
+        init_quad(m);
+        m->add_data = NULL;
+        return;
+    }
+
+    else if (type == GRID && file_path == NULL) {
+        init_grid(m);
+        m->add_data = NULL;
+        return;
+    }
+
+    else if (type == SPHERE && file_path == NULL) {
+        init_sphere(m);
+        m->add_data = NULL;
+        return;
+    }
+
+    else if (type != MODEL_FILE) {
+        AG_ERROR("Unsupported model type specified for init_model");
+        return;
+    }
+
     m->meshes = NULL;
     m->mesh_count = 0;
 
@@ -139,14 +417,21 @@ void draw_model(model* m) {
     }
 }
 
+void draw_model_lines(model* m) {
+    for (u64 i = 0; i < m->mesh_count; ++i) {
+        draw_mesh_lines(&m->meshes[i]);
+    }
+}
+
 void destroy_model(model* m) {
-    if (m->meshes == NULL) {
+    if (m->meshes == NULL || m == NULL) {
         return;
     }
 
     for (u64 i = 0; i < m->mesh_count; ++i) {
         destroy_mesh(&m->meshes[i]);
     }
+
     AGfree(m->meshes, sizeof(mesh) * m->mesh_count, MEMORY_TAG_MODEL);
     m->meshes = NULL;
     m->mesh_count = 0;
@@ -201,4 +486,4 @@ void draw_model_instance(model_instance* instance) {
         use_material(instance->mat);
     }
     draw_model(instance->model);
-}
+}   

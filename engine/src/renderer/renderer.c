@@ -49,10 +49,10 @@ b8 renderer_on_resize(u16 code, void* sender, void* listener_inst, event_context
     }
 }
 
-void renderer_begin_frame() {
+void renderer_begin_frame(float r, float g, float b, float a) {
     switch (renderer_api_in_use) {
         case RENDERER_API_OPENGL:
-            opengl_renderer_begin_frame();
+            opengl_renderer_begin_frame(r, g, b, a);
             break;
         default:
             AG_ERROR("Unsupported renderer API specified in renderer_begin_frame");
@@ -70,3 +70,26 @@ void renderer_end_frame() {
             break;
     }
 }
+
+void renderer_begin_ui_frame() {
+    switch (renderer_api_in_use) {
+        case RENDERER_API_OPENGL:
+            opengl_renderer_begin_ui_frame();
+            break;
+        default:
+            AG_ERROR("Unsupported renderer API specified in renderer_end_frame");
+            break;
+    }
+}
+
+void renderer_end_ui_frame() {
+    switch (renderer_api_in_use) {
+        case RENDERER_API_OPENGL:
+            opengl_renderer_end_ui_frame();
+            break;
+        default:
+            AG_ERROR("Unsupported renderer API specified in renderer_end_frame");
+            break;
+    }
+}
+

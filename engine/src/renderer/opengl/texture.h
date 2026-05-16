@@ -7,6 +7,7 @@ typedef struct texture {
     i32 width;
     i32 height;
     i32 channels;
+    char name[64];
 } texture;
 
 AGINA_API b8 load_texture_from_file(const char* path, texture* out_texture);

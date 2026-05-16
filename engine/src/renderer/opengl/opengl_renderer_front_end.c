@@ -35,8 +35,9 @@ void opengl_renderer_clear_screen(float r, float g, float b, float a) {
     renderer_back_end_clear_screen(r, g, b, a);
 }
 
-void opengl_renderer_begin_frame() {
+void opengl_renderer_begin_frame(float r, float g, float b, float a) {
     // For now, nothing to do here. In the future, we may want to add some per-frame setup code here.
+    opengl_renderer_clear_screen(r, g, b, a);
 }
 
 b8 opengl_renderer_on_resize(u16 code, void* sender, void* listener_inst, event_context data) {
@@ -51,4 +52,12 @@ b8 opengl_renderer_on_resize(u16 code, void* sender, void* listener_inst, event_
 
 void opengl_renderer_end_frame() {
     platform_swap_buffers(state);
+}
+
+void opengl_renderer_begin_ui_frame() {
+    opengl_renderer_back_end_begin_ui_frame();
+}
+
+void opengl_renderer_end_ui_frame() {
+    opengl_renderer_back_end_end_ui_frame();
 }

@@ -19,5 +19,8 @@ void renderer_shutdown();
 void renderer_clear_screen(float r, float g, float b, float a);
 b8 renderer_on_resize(u16 code, void* sender, void* listener_inst, event_context data);
 
-void renderer_begin_frame();
+void renderer_begin_frame(float r, float g, float b, float a);
 void renderer_end_frame();
+
+void renderer_begin_ui_frame();
+void renderer_end_ui_frame();

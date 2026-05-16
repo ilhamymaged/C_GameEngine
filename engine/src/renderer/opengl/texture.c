@@ -2,8 +2,32 @@
 #include <stb_image/stb_image.h>
 #include <glad/glad.h>
 #include <core/logger.h>
+#include <core/AGmemory.h>
+#include <string.h>
 
 b8 load_texture_from_file(const char* path, texture* out_texture) {
+
+    const char* filename = strrchr(path, '/');
+
+    #ifdef _WIN32
+    // Support Windows paths too
+    const char* backslash = strrchr(path, '\\');
+    if (!filename || (backslash && backslash > filename)) {
+        filename = backslash;
+    }
+    #endif
+
+    filename = filename ? filename + 1 : path;
+
+    size_t length = strlen(filename);
+
+    if (length >= sizeof(out_texture->name)) {
+        length = sizeof(out_texture->name) - 1;
+    }
+
+    AGcopy_memory(out_texture->name, filename, length);
+    out_texture->name[length] = '\0';
+
     glGenTextures(1, &out_texture->id);
     glBindTexture(GL_TEXTURE_2D, out_texture->id);
 
@@ -30,8 +54,8 @@ b8 load_texture_from_file(const char* path, texture* out_texture) {
 
         stbi_image_free(data);
         AG_INFO(
-            "Loaded texture from path: %s (ID: %u, Size: %dx%d, Channels: %d)", 
-            path, out_texture->id,
+            "Loaded texture with NAME: %s (ID: %u, Size: %dx%d, Channels: %d)", 
+            out_texture->name, out_texture->id,
             out_texture->width, 
             out_texture->height, 
             out_texture->channels);

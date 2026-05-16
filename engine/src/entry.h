@@ -14,7 +14,7 @@ int main(void) {
         return -1;
     }
 
-    if (!🎮.init || !🎮.render || !🎮.update || !🎮.on_resize || !🎮.shutdown) {
+    if (!🎮.init || !🎮.render || !🎮.update || !🎮.on_resize || !🎮.shutdown || !🎮.ui_render) {
         AG_FATAL("The game's function pointers must be assigned");
         return -2;
     }

@@ -29,6 +29,7 @@ void renderer_back_end_shutdown() {
 }
 
 void renderer_back_end_clear_screen(float r, float g, float b, float a) {
+    glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(r, g, b, a);
 }
@@ -38,3 +39,11 @@ void renderer_back_end_on_resize(u32 width, u32 height) {
     glViewport(0, 0, width, height);
 }
 
+void opengl_renderer_back_end_begin_ui_frame() {
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}   
+
+void opengl_renderer_back_end_end_ui_frame() {
+}

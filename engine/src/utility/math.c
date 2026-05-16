@@ -10,6 +10,82 @@ mat4 mat4_identity() {
     return result;
 }
 
+mat4 mat4_translate(vec3 t) {
+    mat4 result = mat4_identity();
+
+    result.elements[12] = t.x;
+    result.elements[13] = t.y;
+    result.elements[14] = t.z;
+
+    return result;
+}
+
+mat4 mat4_scale(vec3 s) {
+    mat4 r = mat4_identity();
+
+    r.elements[0]  = s.x;
+    r.elements[5]  = s.y;
+    r.elements[10] = s.z;
+
+    return r;
+}
+
+mat4 mat4_rotate_y(float angle) {
+    mat4 r = mat4_identity();
+
+    float c = cosf(angle);
+    float s = sinf(angle);
+
+    r.elements[0]  = c;
+    r.elements[2]  = s;
+    r.elements[8]  = -s;
+    r.elements[10] = c;
+
+    return r;
+}
+
+mat4 mat4_rotate_x(float angle) {
+    mat4 r = mat4_identity();
+
+    float c = cosf(angle);
+    float s = sinf(angle);
+
+    r.elements[5]  = c;
+    r.elements[6]  = s;
+    r.elements[9]  = -s;
+    r.elements[10] = c;
+
+    return r;
+}
+
+mat4 mat4_rotate_z(float angle) {
+    mat4 r = mat4_identity();
+
+    float c = cosf(angle);
+    float s = sinf(angle);
+
+    r.elements[0] = c;
+    r.elements[1] = -s;
+    r.elements[4] = s;
+    r.elements[5] = c;
+
+    return r;
+}
+
+mat4 get_model_matrix(vec3 pos, vec3 scale, vec3 rotation) {
+    mat4 T = mat4_translate(pos);
+
+    mat4 Rx = mat4_rotate_x(rotation.x);
+    mat4 Ry = mat4_rotate_y(rotation.y);
+    mat4 Rz = mat4_rotate_z(rotation.z);
+
+    mat4 R = mat4_multiply(Rz, mat4_multiply(Ry, Rx));
+
+    mat4 S = mat4_scale(scale);
+
+    return mat4_multiply(T, mat4_multiply(R, S));
+}
+
 mat4 mat4_perspective(float fov_radians, float aspect, float near_plane, float far_plane) {
     mat4 result = {0};
     float f = 1.0f / tanf(fov_radians * 0.5f);
@@ -19,6 +95,21 @@ mat4 mat4_perspective(float fov_radians, float aspect, float near_plane, float f
     result.elements[11] = -1.0f;
     result.elements[14] = (2.0f * far_plane * near_plane) / (near_plane - far_plane);
     return result;
+}
+
+mat4 mat4_ortho(float left, float right, float bottom, float top, float near_plane, float far_plane) {
+    mat4 r = {0};
+
+    r.elements[0]  = 2.0f / (right - left);
+    r.elements[5]  = 2.0f / (top - bottom);
+    r.elements[10] = -2.0f / (far_plane - near_plane);
+
+    r.elements[12] = -(right + left) / (right - left);
+    r.elements[13] = -(top + bottom) / (top - bottom);
+    r.elements[14] = -(far_plane + near_plane) / (far_plane - near_plane);
+    r.elements[15] = 1.0f;
+
+    return r;
 }
 
 mat4 mat4_look_at(vec3 eye, vec3 center, vec3 up) {
