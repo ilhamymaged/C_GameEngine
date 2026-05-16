@@ -13,8 +13,8 @@ REM echo "Files:" %cFilenames%
 SET assembly=skyBoxGame
 SET compilerFlags=-g 
 REM -Wall -Werror
-SET includeFlags=-Isrc -I../engine/src/
-SET linkerFlags=-L../bin/ -lengine.lib
+SET includeFlags=-Isrc -I../engine/src/ -I../engine/vendor/glad/include
+SET linkerFlags=-L../bin/ -lengine
 SET defines=-D_DEBUG -DAGINA_IMPORT
 
 ECHO "Building %assembly%%..."

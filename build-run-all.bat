@@ -5,7 +5,7 @@ SetLocal EnableDelayedExpansion
 
 CALL build-all.bat
 PUSHD bin
-start "" cmd /k skyBoxGame.exe
+start "" cmd /c skyBoxGame.exe
 POPD
 
 ECHO Build and run completed successfully.

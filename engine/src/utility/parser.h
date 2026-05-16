@@ -2,5 +2,5 @@
 
 #include "defines.h"
 
-char* read_file(const char* file_path, u64* out_length);
+AGINA_API char* read_file(const char* file_path, u64* out_length);
 

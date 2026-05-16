@@ -14,6 +14,7 @@ b8 create_game(game* out_game) {
     out_game->render = game_render;
     out_game->update = game_update;
     out_game->on_resize = game_on_resize;
+    out_game->shutdown = game_shutdown;
     out_game->state = AGallocate(sizeof(game_state), MEMORY_TAG_GAME);
     return TRUE;
 }

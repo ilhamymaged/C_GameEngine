@@ -111,3 +111,13 @@ char* get_memory_usage_str() {
     return out_string;
 }
 
+u64 get_memory_usage(memory_tag type) {
+    return state.tagged_allocations[type];
+}
+
+void get_remaining_memory_str() {
+    // Check to see if there's remaining memory we haven't freed.
+    if (state.total_allocated != 0) {
+        AG_ERROR("Memory leak detected: %llu bytes still allocated", state.total_allocated);
+    }
+}   

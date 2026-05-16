@@ -1,42 +1,23 @@
 {
-    "configurations": [
-        {
-            "name": "Linux",
-            "includePath": [
-                "${workspaceFolder}/engine/src/**",
-                "${workspaceFolder}/engine/vendor/glad/include/**",
-                "${workspaceFolder}/engine/vendor/assimp/include/**"
-            ],
-            "defines": [
-                "_DEBUG",
-                "UNICODE",
-                "_UNICODE",
-                "AGINA_EXPORT"
-            ],
-            "compilerPath": "/usr/bin/clang",
-            "cStandard": "c17",
-            "cppStandard": "c++17",
-            "intelliSenseMode": "clang-x64"
-        },
-        {
-            "name": "Win32",
-            "includePath": [
-                "${workspaceFolder}/engine/src/**",
-                "${workspaceFolder}/engine/vendor/glad/include/**",
-                "${workspaceFolder}/engine/vendor/assimp/include/**"
-            ],
-            "defines": [
-                "_DEBUG",
-                "UNICODE",
-                "_UNICODE",
-                "AGINA_EXPORT"
-            ],
-            "windowsSdkVersion": "10.0.18362.0",
-            "compilerPath": "C:\\Program Files\\LLVM\\bin\\clang.exe",
-            "cStandard": "c17",
-            "cppStandard": "c++17",
-            "intelliSenseMode": "clang-x64"
-        }
-    ],
-    "version": 4
+  "version": 4,
+  "configurations": [
+    {
+      "name": "Windows-Clang",
+      "compilerPath": "C:/Program Files/LLVM/bin/clang.exe",
+      "intelliSenseMode": "windows-clang-x64",
+      "cStandard": "c17",
+      "cppStandard": "c++17",
+      "includePath": [
+        "${workspaceFolder}/engine/src",
+        "${workspaceFolder}/skyBoxGame/src",
+        "${workspaceFolder}/engine/vendor/glad/include",
+        "${workspaceFolder}/engine/vendor/stb_image",
+        "${workspaceFolder}/engine/vendor/assimp/include"
+      ],
+      "defines": [
+        "_DEBUG",
+        "AGINA_EXPORT"
+      ]
+    }
+  ]
 }

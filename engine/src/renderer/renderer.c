@@ -1,6 +1,6 @@
 #include "renderer.h"
 
-#include "opengl_renderer_front_end.h"
+#include "opengl/opengl_renderer_front_end.h"
 #include "core/logger.h"
 
 static renderer_api renderer_api_in_use;
@@ -70,4 +70,3 @@ void renderer_end_frame() {
             break;
     }
 }
-

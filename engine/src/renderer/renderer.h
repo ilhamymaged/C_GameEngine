@@ -5,6 +5,7 @@
 #include "platform/platform.h"
 
 #include "core/event.h"
+#include "utility/math.h"
 
 typedef enum renderer_api {
     RENDERER_API_OPENGL,
@@ -20,4 +21,3 @@ b8 renderer_on_resize(u16 code, void* sender, void* listener_inst, event_context
 
 void renderer_begin_frame();
 void renderer_end_frame();
-

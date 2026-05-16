@@ -24,6 +24,7 @@ typedef struct application_state {
 
 static application_state app_state;
 static b8 application_on_key_pressed(u16 code, void* sender, void* listener_inst, event_context data);
+static b8 application_on_resize(u16 code, void* sender, void* listener_inst, event_context data);
 static b8 initialized = FALSE;
 
 b8 application_create(game* game_instance) {
@@ -35,6 +36,8 @@ b8 application_create(game* game_instance) {
     app_state.game_instance = game_instance;
     app_state.is_running = TRUE;
     app_state.is_suspended = FALSE;
+    app_state.width  = game_instance->app_config.start_width;
+    app_state.height = game_instance->app_config.start_height;
 
     // Initialize subSystems
     initialize_logging();
@@ -55,7 +58,8 @@ b8 application_create(game* game_instance) {
     }
 
     event_register(EVENT_CODE_KEY_PRESSED, &app_state, application_on_key_pressed);
-   
+    event_register(EVENT_CODE_RESIZED, &app_state, application_on_resize);
+
     renderer_init(
         RENDERER_API_OPENGL,
         &app_state.plat_state, 
@@ -85,6 +89,21 @@ static b8 application_on_key_pressed(u16 code, void* sender, void* listener_inst
     }
 
     return FALSE;
+}
+
+static b8 application_on_resize(u16 code, void* sender, void* listener_inst, event_context data) {
+    (void)code;
+    (void)sender;
+    (void)listener_inst;
+
+    app_state.width = data.data.u32[0];
+    app_state.height = data.data.u32[1];
+
+    if (app_state.game_instance && app_state.game_instance->on_resize) {
+        app_state.game_instance->on_resize(app_state.game_instance, app_state.width, app_state.height);
+    }
+
+    return TRUE;
 }
 
 b8 application_run() {
@@ -157,6 +176,9 @@ b8 application_shutDown() {
     input_shutdown();
     renderer_shutdown();
     event_unregister(EVENT_CODE_KEY_PRESSED, &app_state, application_on_key_pressed);
+    event_unregister(EVENT_CODE_RESIZED, &app_state, application_on_resize);
     platform_shutdown(&app_state.plat_state);
+    app_state.game_instance->shutdown(app_state.game_instance);
+    get_remaining_memory_str();
     return TRUE; 
 }

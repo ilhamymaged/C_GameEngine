@@ -8,6 +8,7 @@ typedef struct game {
     b8 (*update)(struct game* game_instace, f32 delta_time);
     b8 (*render)(struct game* game_instance, f32 delta_time);
     void (*on_resize)(struct game* game_instance, u32 width, u32 height);
+    void (*shutdown)(struct game* game_instance);
     void* state; // Game Independant
 } game;
 

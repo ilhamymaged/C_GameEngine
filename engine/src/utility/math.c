@@ -61,6 +61,14 @@ mat4 mat4_multiply(mat4 a, mat4 b) {
     return result;
 }
 
+vec3 vec3_add(vec3 a, vec3 b) {
+    return (vec3){a.x + b.x, a.y + b.y, a.z + b.z};
+}
+
+vec3 vec3_scale(vec3 v, float scalar) {
+    return (vec3){v.x * scalar, v.y * scalar, v.z * scalar};
+}
+
 float vec3_length(vec3 v) {
     return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
 }
